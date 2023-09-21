@@ -34,34 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BindingErrorsResponse {
 
-    public BindingErrorsResponse() {
-        this(null);
-    }
-
-    public BindingErrorsResponse(Integer id) {
-        this(null, id);
-    }
-
-    public BindingErrorsResponse(Integer pathId, Integer bodyId) {
-        boolean onlyBodyIdSpecified = pathId == null && bodyId != null;
-        if (onlyBodyIdSpecified) {
-            addBodyIdError(bodyId, "must not be specified");
-        }
-        boolean bothIdsSpecified = pathId != null && bodyId != null;
-        if (bothIdsSpecified && !pathId.equals(bodyId)) {
-            addBodyIdError(bodyId, String.format("does not match pathId: %d", pathId));
-        }
-    }
-
-    private void addBodyIdError(Integer bodyId, String message) {
-        BindingError error = new BindingError();
-        error.setObjectName("body");
-        error.setFieldName("id");
-        error.setFieldValue(bodyId.toString());
-        error.setErrorMessage(message);
-        addError(error);
-    }
-
 	private final List<BindingError> bindingErrors = new ArrayList<BindingError>();
 
 	public void addError(BindingError bindingError) {
@@ -89,11 +61,6 @@ public class BindingErrorsResponse {
 			e.printStackTrace();
 		}
 		return errorsAsJSON;
-	}
-
-	@Override
-	public String toString() {
-		return "BindingErrorsResponse [bindingErrors=" + bindingErrors + "]";
 	}
 
 	protected static class BindingError {
@@ -124,12 +91,6 @@ public class BindingErrorsResponse {
 
 		protected void setErrorMessage(String error_message) {
 			this.errorMessage = error_message;
-		}
-
-		@Override
-		public String toString() {
-			return "BindingError [objectName=" + objectName + ", fieldName=" + fieldName + ", fieldValue=" + fieldValue
-					+ ", errorMessage=" + errorMessage + "]";
 		}
 
 	}
