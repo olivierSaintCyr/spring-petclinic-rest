@@ -30,6 +30,7 @@ import org.springframework.samples.petclinic.mapper.PetMapper;
 import org.springframework.samples.petclinic.mapper.VisitMapper;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
+import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.rest.advice.ExceptionControllerAdvice;
 import org.springframework.samples.petclinic.rest.dto.OwnerDto;
 import org.springframework.samples.petclinic.rest.dto.PetDto;
@@ -452,6 +453,48 @@ class OwnerRestControllerTests {
         this.mockMvc.perform(get("/api/owners/1/pets")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER_ADMIN")
+    void testListOwnersVisitsError() throws Exception {
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        var owner = ownerMapper.toOwner(owners.get(0));
+        given(this.clinicService.findOwnerById(2)).willReturn(owner);
+        var pet = petMapper.toPet(pets.get(0));
+        pet.setOwner(owner);
+        given(this.clinicService.findPetById(1)).willReturn(pet);
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        this.mockMvc.perform(get("/api/owners/1/pets")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER_ADMIN")
+    void testListOwnersVisits() throws Exception {
+        var pet = petMapper.toPet(pets.get(0));
+
+        List<Visit> visits = new ArrayList<>();
+        Visit visit1 = new Visit();
+        visit1.setDescription("visit des");
+        visit1.setDate(LocalDate.now());
+        visit1.setPet(pet);
+        visit1.setId(1);
+        visits.add(visit1);
+
+        given(this.clinicService.findAllVisits()).willReturn(visits);
+
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        var owner = ownerMapper.toOwner(owners.get(0));
+        given(this.clinicService.findOwnerById(2)).willReturn(owner);
+
+        pet.setOwner(owner);
+        given(this.clinicService.findPetById(1)).willReturn(pet);
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        this.mockMvc.perform(get("/api/owners/2/visits")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 
 

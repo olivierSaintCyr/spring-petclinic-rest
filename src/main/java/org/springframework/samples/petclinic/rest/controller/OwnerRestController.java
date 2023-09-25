@@ -191,4 +191,16 @@ public class OwnerRestController implements OwnersApi {
         List<PetDto> petDtos = pets.stream().map(petMapper::toPetDto).toList();
         return new ResponseEntity<>(petDtos, HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole(@roles.OWNER_ADMIN)")
+    @Override
+    public ResponseEntity<List<VisitDto>> listOwnersVisits(Integer ownerId) {
+        Owner owner = this.clinicService.findOwnerById(ownerId);
+        if (owner == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Collection<Visit> visits = this.clinicService.findAllVisits();
+        List<VisitDto> visitDtos = this.visitMapper.toVisitsDto(visits).stream().toList();
+        return  new ResponseEntity<>(visitDtos, HttpStatus.OK);
+    }
 }
