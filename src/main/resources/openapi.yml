@@ -1881,7 +1881,7 @@ paths:
       parameters:
         - name: username
           in: path
-          description: The ID of the pet owner.
+          description: The username of the user.
           required: true
           schema:
             type: string
