@@ -20,10 +20,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.petclinic.mapper.SpecialtyMapper;
 import org.springframework.samples.petclinic.mapper.VetMapper;
+import org.springframework.samples.petclinic.mapper.VisitMapper;
 import org.springframework.samples.petclinic.model.Specialty;
 import org.springframework.samples.petclinic.model.Vet;
+import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.rest.api.VetsApi;
 import org.springframework.samples.petclinic.rest.dto.VetDto;
+import org.springframework.samples.petclinic.rest.dto.VisitDto;
 import org.springframework.samples.petclinic.service.ClinicService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +34,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -44,12 +48,14 @@ public class VetRestController implements VetsApi {
 
     private final ClinicService clinicService;
     private final VetMapper vetMapper;
+    private final VisitMapper visitMapper;
     private final SpecialtyMapper specialtyMapper;
 
-    public VetRestController(ClinicService clinicService, VetMapper vetMapper, SpecialtyMapper specialtyMapper) {
+    public VetRestController(ClinicService clinicService, VetMapper vetMapper, SpecialtyMapper specialtyMapper, VisitMapper visitMapper) {
         this.clinicService = clinicService;
         this.vetMapper = vetMapper;
         this.specialtyMapper = specialtyMapper;
+        this.visitMapper = visitMapper;
     }
 
     @PreAuthorize("hasRole(@roles.VET_ADMIN)")
@@ -71,6 +77,18 @@ public class VetRestController implements VetsApi {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(vetMapper.toVetDto(vet), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole(@roles.VET_ADMIN)")
+    @Override
+    public ResponseEntity<List<VisitDto>> listVetVisits(Integer vetId)  {
+        Vet vet = this.clinicService.findVetById(vetId);
+        if (vet == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Collection<Visit> visits = clinicService.findAllVisits();
+        Collection<VisitDto> visitDtos = visitMapper.toVisitsDto(visits);
+        return new ResponseEntity<>(visitDtos.stream().toList(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole(@roles.VET_ADMIN)")

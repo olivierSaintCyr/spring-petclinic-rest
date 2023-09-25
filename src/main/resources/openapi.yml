@@ -1817,6 +1817,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestError'
+  /vets/{vetId}/visits:
+    get:
+      tags:
+        - vet
+      operationId: listVetVisits
+      summary: Get the vet visits by id
+      description: Returns the vet visits or a 404 error.
+      parameters:
+        - name: vetId
+          in: path
+          description: The ID of the vet.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            example: 1
+      responses:
+        200:
+          description: Vet visits found and returned.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Visit'
+        304:
+          description: Not modified.
+          headers:
+            ETag:
+              description: An ID for this version of the response.
+              schema:
+                type: string
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        404:
+          description: Vet not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
   /users:
     post:
       tags:

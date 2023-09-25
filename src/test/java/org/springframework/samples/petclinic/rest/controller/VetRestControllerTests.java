@@ -220,4 +220,22 @@ class VetRestControllerTests {
         	.andExpect(status().isNotFound());
     }
 
+    @Test
+    @WithMockUser(roles="VET_ADMIN")
+    void testVetListVisits() throws Exception {
+        given(this.clinicService.findVetById(1)).willReturn(vets.get(0));
+        this.mockMvc.perform(get("/api/vets/1/visits")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"));
+    }
+
+    @Test
+    @WithMockUser(roles="VET_ADMIN")
+    void testVetListVisitsError() throws Exception {
+        given(this.clinicService.findVetById(1)).willReturn(vets.get(0));
+        this.mockMvc.perform(get("/api/vets/2/visits")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isNotFound());
+    }
 }
