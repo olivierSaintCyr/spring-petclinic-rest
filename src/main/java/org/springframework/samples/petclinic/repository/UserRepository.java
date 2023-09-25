@@ -6,4 +6,6 @@ import org.springframework.samples.petclinic.model.User;
 public interface UserRepository {
 
     void save(User user) throws DataAccessException;
+    void delete(User user) throws DataAccessException;
+    User getByUsername(String name) throws DataAccessException;
 }

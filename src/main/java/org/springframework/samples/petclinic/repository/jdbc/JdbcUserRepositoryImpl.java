@@ -46,8 +46,16 @@ public class JdbcUserRepositoryImpl implements UserRepository {
         }
     }
 
-    private User getByUsername(String username) {
+    @Override
+    public void delete(User user) throws DataAccessException {
+        BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
+        getByUsername(user.getUsername());
+        this.namedParameterJdbcTemplate.update("DELETE FROM users WHERE username=:username", parameterSource);
+        deleteUserRoles(user);
+    }
 
+    @Override
+    public User getByUsername(String username) {
         Map<String, Object> params = new HashMap<>();
         params.put("username", username);
         return this.namedParameterJdbcTemplate.queryForObject("SELECT * FROM users WHERE username=:username",
@@ -64,5 +72,11 @@ public class JdbcUserRepositoryImpl implements UserRepository {
                 this.namedParameterJdbcTemplate.update("INSERT INTO roles(username, role) VALUES (:username, :role)", params);
             }
         }
+    }
+
+    private void deleteUserRoles(User user) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("username", user.getUsername());
+        this.namedParameterJdbcTemplate.update("DELETE FROM roles WHERE username=:username", params);
     }
 }

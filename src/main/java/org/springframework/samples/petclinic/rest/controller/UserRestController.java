@@ -25,12 +25,7 @@ import org.springframework.samples.petclinic.rest.api.UsersApi;
 import org.springframework.samples.petclinic.rest.dto.UserDto;
 import org.springframework.samples.petclinic.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(exposedHeaders = "errors, content-type")
@@ -49,9 +44,25 @@ public class UserRestController implements UsersApi {
     @PreAuthorize( "hasRole(@roles.ADMIN)" )
     @Override
     public ResponseEntity<UserDto> addUser(UserDto userDto) {
+        System.out.println("add user " + userDto.getUsername());
         HttpHeaders headers = new HttpHeaders();
         User user = userMapper.toUser(userDto);
         this.userService.saveUser(user);
         return new ResponseEntity<>(userMapper.toUserDto(user), headers, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize( "hasRole(@roles.ADMIN)" )
+    @Override
+    public ResponseEntity<UserDto> deleteUser(
+        String username
+    ) {
+        System.out.println("delete user " + username);
+        HttpHeaders headers = new HttpHeaders();
+        User user = userService.findUserByUsername(username);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        this.userService.removeUser(user);
+        return new ResponseEntity<>(userMapper.toUserDto(user), headers, HttpStatus.OK);
     }
 }
