@@ -423,5 +423,36 @@ class OwnerRestControllerTests {
             .andExpect(status().isNotFound());
     }
 
+    @Test
+    @WithMockUser(roles = "OWNER_ADMIN")
+    void testListOwnersPets() throws Exception {
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        var owner = ownerMapper.toOwner(owners.get(0));
+        given(this.clinicService.findOwnerById(2)).willReturn(owner);
+        var pet = petMapper.toPet(pets.get(0));
+        pet.setOwner(owner);
+        given(this.clinicService.findPetById(1)).willReturn(pet);
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        this.mockMvc.perform(get("/api/owners/2/pets")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"));
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER_ADMIN")
+    void testListOwnersPetsError() throws Exception {
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        var owner = ownerMapper.toOwner(owners.get(0));
+        given(this.clinicService.findOwnerById(2)).willReturn(owner);
+        var pet = petMapper.toPet(pets.get(0));
+        pet.setOwner(owner);
+        given(this.clinicService.findPetById(1)).willReturn(pet);
+        given(this.clinicService.findAllOwners()).willReturn(ownerMapper.toOwners(owners));
+        this.mockMvc.perform(get("/api/owners/1/pets")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
 
 }

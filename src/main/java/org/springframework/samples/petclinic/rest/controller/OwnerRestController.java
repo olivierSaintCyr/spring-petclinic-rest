@@ -39,6 +39,7 @@ import jakarta.transaction.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Vitaliy Fedoriv
@@ -177,5 +178,17 @@ public class OwnerRestController implements OwnersApi {
                 return new ResponseEntity<>(petMapper.toPetDto(pet), HttpStatus.OK);
             }
         }
+    }
+
+    @PreAuthorize("hasRole(@roles.OWNER_ADMIN)")
+    @Override
+    public ResponseEntity<List<PetDto>> listOwnersPets(Integer ownerId) {
+        Owner owner = this.clinicService.findOwnerById(ownerId);
+        if (owner == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        List<Pet> pets = owner.getPets();
+        List<PetDto> petDtos = pets.stream().map(petMapper::toPetDto).toList();
+        return new ResponseEntity<>(petDtos, HttpStatus.OK);
     }
 }
