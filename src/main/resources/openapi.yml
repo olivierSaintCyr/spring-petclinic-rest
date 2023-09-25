@@ -1872,6 +1872,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestError'
+    put:
+      tags:
+        - user
+      operationId: updateUser
+      summary: Update a user password
+      description: Updates the user password.
+      parameters:
+        - name: username
+          in: path
+          description: The ID of the pet owner.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The user with new password.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        200:
+          description: Update successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        404:
+          description: Owner not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+
 components:
   schemas:
     RestError:

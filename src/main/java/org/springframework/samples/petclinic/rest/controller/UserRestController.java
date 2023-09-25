@@ -44,7 +44,6 @@ public class UserRestController implements UsersApi {
     @PreAuthorize( "hasRole(@roles.ADMIN)" )
     @Override
     public ResponseEntity<UserDto> addUser(UserDto userDto) {
-        System.out.println("add user " + userDto.getUsername());
         HttpHeaders headers = new HttpHeaders();
         User user = userMapper.toUser(userDto);
         this.userService.saveUser(user);
@@ -56,7 +55,6 @@ public class UserRestController implements UsersApi {
     public ResponseEntity<UserDto> deleteUser(
         String username
     ) {
-        System.out.println("delete user " + username);
         HttpHeaders headers = new HttpHeaders();
         User user = userService.findUserByUsername(username);
         if (user == null) {
@@ -64,5 +62,21 @@ public class UserRestController implements UsersApi {
         }
         this.userService.removeUser(user);
         return new ResponseEntity<>(userMapper.toUserDto(user), headers, HttpStatus.OK);
+    }
+
+    @PreAuthorize( "hasRole(@roles.ADMIN)" )
+    @Override
+    public ResponseEntity<UserDto> updateUser(
+        String username,
+        UserDto userDto
+    ) {
+        HttpHeaders headers = new HttpHeaders();
+        User user = userService.findUserByUsername(username);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        user.setPassword(userDto.getPassword());
+        User updated = this.userService.updateUser(user);
+        return new ResponseEntity<>(userMapper.toUserDto(updated), headers, HttpStatus.OK);
     }
 }

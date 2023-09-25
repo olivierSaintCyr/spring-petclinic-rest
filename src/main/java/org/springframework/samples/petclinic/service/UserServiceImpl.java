@@ -42,6 +42,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public User updateUser(User user) {
+        userRepository.save(user);
+        return findUserByUsername(user.getUsername());
+    }
+
+    @Override
+    @Transactional
     public User findUserByUsername(String username) {
         return userRepository.getByUsername(username);
     }

@@ -6,5 +6,6 @@ public interface UserService {
 
     void saveUser(User user) ;
     void removeUser(User user);
+    User updateUser(User user);
     User findUserByUsername(String userName);
 }
