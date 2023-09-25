@@ -20,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -71,5 +73,57 @@ class UserRestControllerTests {
         this.mockMvc.perform(post("/api/users/")
             .content(newVetAsJSON).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testDeleteUser() throws Exception {
+        User user = new User();
+        String username = "username";
+        user.setUsername(username);
+        user.setPassword("password");
+        user.setEnabled(true);
+        user.addRole("OWNER_ADMIN");
+
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(userMapper.toUserDto(user));
+
+        User deleted = new User();
+        deleted.setUsername(username);
+        deleted.setPassword("password");
+        deleted.setEnabled(true);
+        deleted.addRole("ROLE_OWNER_ADMIN");
+
+        String expectedDeletion = mapper.writeValueAsString(userMapper.toUserDto(deleted));
+        this.mockMvc.perform(post("/api/users/")
+                .content(userJson).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isCreated());
+        this.mockMvc.perform(delete("/api/users/" + username)
+            .accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testDeleteUserError() throws Exception {
+
+        User user = new User();
+        String username = "username";
+        user.setUsername(username);
+        user.setPassword("password");
+        user.setEnabled(true);
+        user.addRole("OWNER_ADMIN");
+
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(userMapper.toUserDto(user));
+
+        this.mockMvc.perform(post("/api/users/")
+                .content(userJson).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isCreated());
+
+        String nonExistent = "username2";
+        this.mockMvc.perform(delete("/api/users/" + nonExistent)
+                .accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isNotFound());
     }
 }
