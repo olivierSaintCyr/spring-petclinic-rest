@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -125,5 +126,56 @@ class UserRestControllerTests {
         this.mockMvc.perform(delete("/api/users/" + nonExistent)
                 .accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testUpdateUserError() throws Exception {
+
+        User user = new User();
+        String username = "username";
+        user.setUsername(username);
+        user.setPassword("password");
+        user.setEnabled(true);
+        user.addRole("OWNER_ADMIN");
+
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(userMapper.toUserDto(user));
+
+        this.mockMvc.perform(post("/api/users/")
+                .content(userJson).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isCreated());
+
+        String nonExistent = "username2";
+        this.mockMvc.perform(put("/api/users/" + nonExistent)
+                .content(userJson).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testUpdateUserPassword() throws Exception {
+
+        User user = new User();
+        String username = "username";
+        user.setUsername(username);
+        user.setPassword("password");
+        user.setEnabled(true);
+        user.addRole("OWNER_ADMIN");
+
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(userMapper.toUserDto(user));
+
+        this.mockMvc.perform(post("/api/users/")
+                .content(userJson).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isCreated());
+
+        user.setPassword("newpassword");
+        String updatedJSON = mapper.writeValueAsString(userMapper.toUserDto(user));
+        this.mockMvc.perform(put("/api/users/" + username)
+                .content(updatedJSON).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk());
     }
 }
